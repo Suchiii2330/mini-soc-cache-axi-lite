@@ -16,6 +16,10 @@ The system demonstrates fundamental SoC concepts including:
 
 The design is verified using a SystemVerilog testbench and simulation waveforms.
 
+The verification environment was further extended using SystemVerilog DPI (Direct Programming Interface).
+A C-based stimulus generator was integrated with the SystemVerilog testbench to generate randomized address and data values. These values are transferred from C to SystemVerilog and used to initiate AXI transactions before executing the main verification test suite.
+
+
 Architecture
 AXI Master (Testbench)---> AXI-Lite Slave Interface---->Simple Interconnect (Address Decoder)--->1. Cache Controller or 2. Timer Peripheral
                                                                                                           ^
@@ -89,7 +93,7 @@ Features:
 2.Request/response interface
 3.Byte-addressable storage
 4.Memory initialized with address values for easy debugging
-
+5.DPI-Based Stimulus Generation : SystemVerilog DPI-C integration
 
 Timer Peripheral
 A simple memory-mapped peripheral accessed through the interconnect.
@@ -103,6 +107,20 @@ if address < 0x80 → cache
 if 0x80 ≤ address < 0x90 → timer
 otherwise → decode error
 ->Responses are multiplexed back to the AXI slave.
+
+
+DPI Integration
+
+The testbench imports a C function using SystemVerilog DPI:
+import "DPI-C" function void get_next_vector(output int addr, output int data);
+The C implementation generates randomized address and data values:
+void get_next_vector(int *addr, int *data)
+{
+    *addr = rand() % 144;
+    *data = rand() & 0xFF;
+}
+Generated values are returned to the SystemVerilog testbench and used for AXI write/read transactions.
+This demonstrates software-hardware co-verification using DPI.
 
 
 Verification
@@ -137,4 +155,6 @@ Technologies Used:
 ->AXI-Lite protocol
 ->RTL design
 ->Digital cache architecture
+-> SystemVerilog DPI-C
+-> C
 ->Simulation-based verification
